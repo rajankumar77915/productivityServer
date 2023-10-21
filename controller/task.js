@@ -117,9 +117,9 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!id) {
+      const { id } = req.params;
+      console.log("Sucess", req.params);
+      if (!id) {
       return res.status(400).json({
         status: false,
         message: "Task ID is required",
@@ -127,7 +127,7 @@ const deleteTask = async (req, res) => {
     }
 
     // Delete the task with the specified ID
-    const task = await Task.deleteOne({ _id: id });
+      const task = await Task.deleteOne({ _id: id });
 
     if (!task) {
       return res.status(404).json({
@@ -170,8 +170,8 @@ const getTasks = async (req, res) => {
 
     const tasks = await Task.find({
       user: userId,
-      dateTime: {
-        $lte: new Date(formattedDate),
+        dateTime: {
+            $lte: Date(date.toISOString()),
       },
       $or:[
         {
@@ -184,7 +184,7 @@ const getTasks = async (req, res) => {
       ]
       
     });
-    
+      console.log("tasks:",tasks);
 
     let statusObject=[] ;
     let myTask=[]
@@ -195,8 +195,8 @@ const getTasks = async (req, res) => {
     
       element.status?.find((status) => {
         // console.log("om", status?.date?.toISOString()?.split('T')[0], formattedDate);
-    
-        if (status?.date?.toISOString()?.split('T')[0] === formattedDate) {
+
+          if (status?.date?.toISOString()?.split('T')[0] === date.toISOString()?.split('T')[0]) {
           element.status = status;
       
           myTask.push(element);
@@ -235,52 +235,58 @@ const getTasks = async (req, res) => {
   }
 };
 
-const updateStatus = async (req, res) => {
-  try {
-    
-    const taskId = req.body.id; // Get the _id from the request parameters
-    const  date= new Date(req.body.date); // Extract the new 'done' status and 'date' from the request body
-    const done=req.body.status
-    // Use Mongoose to find the task by _id
-    const task = await Task.findById(taskId);
-    
-    if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
-    }
-    
-    // Check if a status object with the given date already exists
-    const statusIndex = task.status.findIndex((status) => status.date === date);
-    
-    if (statusIndex === -1) {
-      // If not found, create a new status object
-      task.status.push({ date, done:true });
-    } else {
-      // If found, update the 'done' status of the existing status object
-      task.status[statusIndex].done = done;
-    }
-    
-    // Save the updated task
-    
-      const updatedTask = await task.save();
-      console.log(taskId,done,date,statusIndex)
-   
-    
-    if (!updatedTask) {
-      return res.status(404).json({ error: "Task not found" });
-    }
+const updateTaskall = async (req, res) => {
+    try {
+        console.log("sucees");
+        const taskId = req.params.id; // Assuming the task ID is passed as a route parameter
+        const { title, subTitle, dateTime, scheduleType, dayOfMonth, dayOfWeek, selectedDateText } = req.body;
 
-    return res.status(200).json(updatedTask);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-}
+        // Construct the updated task data
+        const updatedTaskData = {
+            title,
+            subTitle,
+            dateTime,
+            scheduleType,
+            dayOfMonth,
+            dayOfWeek,
+            selectedDateText,
+       
+        };
 
+        // Update the task in the database
+        const updatedTask = await Task.findByIdAndUpdate(
+            taskId,
+            { $set: updatedTaskData },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedTask) {
+            return res.status(404).json({
+                status: false,
+                message: "Task not found or not updated.",
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "Task updated successfully.",
+            data: updatedTask,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            status: false,
+            message: `Error updating task: ${error.message}`,
+        });
+    }
+};
+
+module.exports = { updateTask };
 module.exports = {
   insertTask,
   updateTask,
   deleteTask,
-  getTasks, updateStatus
+    getTasks, updateTaskall
 }
 
 

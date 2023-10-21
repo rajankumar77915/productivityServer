@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\controller",
+    "\\models",
+    "\\routes"
   ],
   "PreviewInSolutionExplorer": false
 }

@@ -5,9 +5,10 @@ const { json } = require("express");
 
 exports.signup = async (req, res) => {
     try {
+        console.log("use");
       // Get data
       const { name, email, password} = req.body;
-
+        
       // Check if the user already exists
       const existUser = await user.findOne({ email });
       if (existUser) {
