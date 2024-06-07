@@ -5,7 +5,7 @@ const app=express();
 //load config fromEnv
 require("dotenv").config();
 const PORT=process.env.PORT || 4000;
-
+process.env.TZ = 'Asia/Kolkata';
 //middleware to pass jsong request body
 app.use(express.json());
 
@@ -25,5 +25,5 @@ require("./config/database").dbConnect();
 
  //default route
  app.get("/",(req,res)=>{
-    res.send(`ashish is  mahan coder`);
+    res.send(`Server is running...`);
  })
